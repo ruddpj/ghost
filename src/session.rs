@@ -1,4 +1,6 @@
-use std::process;
+mod store;
+
+use std::process::Command;
 use sysinfo::{System, SystemExt, ProcessExt};
 use serde::{Serialize, Deserialize};
 use std:fs;
@@ -12,7 +14,7 @@ struct Session {
     time: u64
 }
 
-fn save(name: String) -> Result<Session, String> {
+fn save_session(name: String) -> Result<Session, String> {
     let mut sys = System::new_all();
     sys.refresh_all();
 
@@ -41,4 +43,19 @@ fn save(name: String) -> Result<Session, String> {
         shell,
         time,
     })
+}
+
+fn load_session(session: Session) {
+    println!("Restoring session: {}...", session.name);
+
+    let mut child = Command:new(&snapshot.shell);
+
+    child.current_dir(&session.dir);
+
+    let mut status = child.spawn()
+        .expect("Failed to start shell.")
+        .wait()
+        .expect("Shell crashed or interrupted.");
+
+    println!("Session ended with status: {}", status);
 }
