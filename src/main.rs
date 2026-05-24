@@ -6,13 +6,14 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 struct Cli {
     #[command(subcommand)]
-    command: Command,
+    command: Commands,
 }
 
 #[derive(Subcommand)]
 enum Commands {
     Save { name: String },
     Load { name: String },
+    Delete { name: String },
 }
 
 
@@ -31,8 +32,14 @@ fn main() {
             }
         }
         Commands::Load { name } => {
-            match store::deserialize_session(name) {
+            match store::deserialize_session(&name) {
                 Ok(session) => session::load_session(session),
+                Err(e) => eprintln!("Error: {}", e),
+            }
+        }
+        Commands::Delete { name } => {
+            match store::delete_session(&name) {
+                Ok(_) => println!("Session deleted: {}", name),
                 Err(e) => eprintln!("Error: {}", e),
             }
         }
